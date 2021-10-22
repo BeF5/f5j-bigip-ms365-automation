@@ -266,7 +266,7 @@ def http_get_wrapper(url, uri_qstring):
         try:
             conn.request("GET", proxy_request_string)
         except Exception as e:
-            log(1, "Proxy Connectio error.")
+            log(1, "Proxy connection error.")
             log(1, str(e))
             return ()
         else:
