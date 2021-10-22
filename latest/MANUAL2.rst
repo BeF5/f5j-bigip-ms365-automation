@@ -99,8 +99,8 @@ BIG-IP Data Groupの名称
     :header: "項目", "デフォルト", "説明"
     :widths: 15, 10, 30
 
-    device_group_name, device-group1, "冗長構成の場合は必須です。冗長構成のため設定したDevice Group名称を与えます。Config Syncのために用いられます。"
-    ha_config,1,"1= 冗長構成, 0=スタンドアロン"
+    device_group_name, dg-failover, "冗長構成の場合は必須です。冗長構成のため設定したDevice Group名称を与えます。Config Syncのために用いられます。"
+    ha_config,0,"1= 冗長構成, 0=スタンドアロン"
 
 ログ関連
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
