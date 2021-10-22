@@ -25,19 +25,19 @@ BIG-IPでURLのリストを格納する場所として
 
 o365update.pyの使い方 - 概要 `MANUAL1`__
 
-.. _MANUAL1: ./datagroup/MANUAL1.rst
+.. _MANUAL1: ./latest/MANUAL1.rst
 
 __ MANUAL1_
 
 o365update.pyの使い方 - 詳細 `MANUAL2`__
 
-.. _MANUAL2: ./datagroup/MANUAL2.rst
+.. _MANUAL2: ./latest/MANUAL2.rst
 
 __ MANUAL2_
 
 サンプルプログラム `o365update.py`__
 
-.. _o365update.py: ./datagroup/o365update.py
+.. _o365update.py: ./latest/o365update.py
 
 __ o365update.py_
 
@@ -63,7 +63,7 @@ v1.2 (2019.7.26)
 当プログラムの仕様と理由に関するメモ
 --------------------------------------
 * BIG-IPにインストールされているPythonは2.xです。そのためこのサンプルプログラムもPython 2.xをベースに作成されています。
-* BIG-IPのインストールされているthird-party softwareのバージョン詳細に関しては各TMOSバージョンのBIG-IP third-party software matrixをご参照ください
+* BIG-IPにインストールされているthird-party softwareのバージョン詳細に関しては各TMOSバージョンのBIG-IP third-party software matrixをご参照ください
 
     - https://support.f5.com/csp/article/K48851448
 

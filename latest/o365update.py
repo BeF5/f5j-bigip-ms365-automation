@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # O365 url/ip update automation for BIG-IP
-# Version: 1.30
-# Last Modified: 2 July 2021
+# Version: 1.40
+# Last Modified: 22 Oct 2021
 # Author: Makoto Omura, F5 Networks Japan G.K.
 #
 # This Sample Software provided by the author is for illustrative
@@ -28,6 +28,7 @@ import json
 import commands
 import datetime
 import sys
+import base64
 
 #-----------------------------------------------------------------------
 # User Options - Configure as desired
@@ -57,6 +58,14 @@ care_cat_default = 1    # "Default" category: 0=ignore, 1=include
 # Action if O365 endpoint list is not updated
 force_o365_record_refresh = 0   # 0=do not update, 1=update (for test/debug purpose)
 
+# Proxy server for BIG-IP
+proxy_use = 0                   # 0=BIG-IP directly accesses Microsoft Web Service, 1=BIG-IP uses proxy server
+proxy_host = "proxy.sample.com" # Proxy server hostname or IP address
+proxy_port = 3128               # Proxy server port
+proxy_username = "user1"        # Proxy username
+proxy_password = "password1"    # Proxy password
+proxy_auth = "basic"            # Proxy authentication method. Expects either [ basic | none ]
+
 # BIG-IP Data Group name
 dg_urls_to_bypass_all = "ext_o365_url"              # All URLs
 dg_urls_to_bypass_er_true = "ext_o365_url_er_true"  # URLs to go via Express Route
@@ -69,8 +78,8 @@ dg_ip6s_to_bypass_er_true = "ext_o365_ip6_er_true"  # IPv6 endpoints to go via E
 dg_ip6s_to_bypass_er_none = "ext_o365_ip6_er_none"  # IPv6 endpoints not to go via Express Route
 
 # BIG-IP HA Configuration
-device_group_name = "dg-failover-1"     # Name of Sync-Failover Device Group.  Required for HA paired BIG-IP.
-ha_config = 1                           # 0=stand alone, 1=HA paired
+device_group_name = "dg-failover"     # Name of Sync-Failover Device Group.  Required for HA paired BIG-IP.
+ha_config = 0                           # 0=stand alone, 1=HA paired
 
 # Log configuration
 log_level = 1   # 0=none, 1=normal, 2=verbose
@@ -135,13 +144,13 @@ def extract_ips(o365_ep_element, output_list_v4, output_list_v6, log_label):
                 output_list_v4.append(ip)
 
 
+# -----------------------------------------------------------------------
+# Data Group File update
+# -----------------------------------------------------------------------
+# The object appears in WebUI: System › File Management : Data Group File List >> xxx_object
+# {source_file_name} expects one of the Data Group File name variables (dg_file_name_xxx_xxx)
+# {target_data_group} expects one of the Data Group name variables (dg_xxx_to_bypass_xxx)
 def datagroup_output_urls(source_file_name, output_data_group, log_label):
-    # -----------------------------------------------------------------------
-    # Data Group File update
-    # -----------------------------------------------------------------------
-    # The object appears in WebUI: System › File Management : Data Group File List >> xxx_object
-    # {source_file_name} expects one of the Data Group File name variables (dg_file_name_xxx_xxx)
-    # {target_data_group} expects one of the Data Group name variables (dg_xxx_to_bypass_xxx)
     result = commands.getoutput("tmsh list sys file data-group " + output_data_group + "_object")
     # Create or update Data Group File from text file (given for variable "source_file_name")
     if "was not found" in result:
@@ -168,15 +177,14 @@ def datagroup_output_urls(source_file_name, output_data_group, log_label):
             + output_data_group + "_object")
 
 
+# -----------------------------------------------------------------------
+# Data Group File update
+# -----------------------------------------------------------------------
+# The object appears in WebUI: System › File Management : Data Group File List >> xxx_object
+# {source_file_name} expects one of the Data Group File name variables (dg_file_name_xxx_xxx)
+# {target_data_group} expects one of the Data Group name variables (dg_xxx_to_bypass_xxx)
 def datagroup_output_ips(source_file_name, output_data_group, log_label):
-    # -----------------------------------------------------------------------
-    # Data Group File update
-    # -----------------------------------------------------------------------
-    # The object appears in WebUI: System › File Management : Data Group File List >> xxx_object
-    # {source_file_name} expects one of the Data Group File name variables (dg_file_name_xxx_xxx)
-    # {target_data_group} expects one of the Data Group name variables (dg_xxx_to_bypass_xxx)
     result = commands.getoutput("tmsh list /sys file data-group " + output_data_group + "_object")
-
     # Create or update Data Group File from text file (given for variable "source_file_name")
     if "was not found" in result:
         result2 = commands.getoutput("tmsh create /sys file data-group " + output_data_group
@@ -241,6 +249,34 @@ def process_ips(list_ips, output_file_name, log_label):
     fout.close()
     log(2, log_label + ": Number of ENDPOINTS to import (after dedupe) -IP:" + str(num_ips_post))
     return (num_ips_post)
+
+
+# -----------------------------------------------------------------------
+# HTTP GET Wrapper - use proxy upon user setting
+# -----------------------------------------------------------------------
+def http_get_wrapper(url, uri_qstring):
+    if proxy_use:
+        headers = {}
+        if proxy_auth == "basic":
+            auth = '%s:%s' % (proxy_username, proxy_password)
+            headers['Proxy-Authorization'] = 'Basic ' + base64.b64encode(auth)
+        conn = httplib.HTTPSConnection(proxy_host, proxy_port)
+        conn.set_tunnel(url, 443, headers)
+        proxy_request_string = "https://" + url + uri_qstring
+        try:
+            conn.request("GET", proxy_request_string)
+        except Exception as e:
+            log(1, "Proxy Connectio error.")
+            log(1, str(e))
+            return ()
+        else:
+            m_res = conn.getresponse()
+            return (m_res)     
+    else:
+        conn = httplib.HTTPSConnection(url)
+        conn.request('GET', uri_qstring)
+        m_res = conn.getresponse()
+        return (m_res)
 
 
 def main():
@@ -330,10 +366,8 @@ def main():
     # -----------------------------------------------------------------------
     # O365 endpoints list VERSION check - lookup MS server
     # -----------------------------------------------------------------------
-    request_string = uri_ms_o365_version + guid
-    conn = httplib.HTTPSConnection(url_ms_o365_version)
-    conn.request('GET', request_string)
-    res = conn.getresponse()
+    uri_guid = uri_ms_o365_version + guid
+    res = http_get_wrapper(url_ms_o365_version, uri_guid)
 
     if not res.status == 200:
         # MS O365 version request failed
@@ -366,10 +400,8 @@ def main():
     # -----------------------------------------------------------------------
     # Request O365 endpoints list & put it in dictionary
     # -----------------------------------------------------------------------
-    request_string = uri_ms_o365_endpoints + guid
-    conn = httplib.HTTPSConnection(url_ms_o365_endpoints)
-    conn.request('GET', request_string)
-    res = conn.getresponse()
+    uri_guid = uri_ms_o365_endpoints + guid
+    res = http_get_wrapper(url_ms_o365_endpoints, uri_guid)
 
     if not res.status == 200:
         log(1, "ENDPOINTS request to MS web service failed. Aborting operation.")
@@ -379,12 +411,8 @@ def main():
         dict_o365_all = json.loads(res.read())
 
     # -----------------------------------------------------------------------
-    # Pick only required categories of records
-    # -----------------------------------------------------------------------
-
-
-    # -----------------------------------------------------------------------
     # Process each record (O365 endpoint) which is dictionary type
+    # Pick only required categories of records
     # -----------------------------------------------------------------------
     for dict_o365_record in dict_o365_all:
         ep_service_area = str(dict_o365_record['serviceArea'])
