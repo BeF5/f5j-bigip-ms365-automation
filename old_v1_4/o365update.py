@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # O365 url/ip update automation for BIG-IP
-# Version: 1.50
-# Last Modified: 2 Dec 2021
+# Version: 1.40
+# Last Modified: 22 Oct 2021
 # Author: Makoto Omura, F5 Networks Japan G.K.
 #
 # This Sample Software provided by the author is for illustrative
@@ -51,12 +51,9 @@ care_skype = 1      # "Skype": 0=ignore, 1=include
 care_sharepoint = 1 # "SharePoint": 0=ignore, 1=include
 
 # O365 "category" to include in bypass lists
-care_allow_true  = 1        # category "Allow" and required "true": 0=ignore, 1=include
-care_allow_false  = 1       # category "Allow" and required "false": 0=ignore, 1=include
-care_optimize_true = 1      # category "Optimize" and required "true": 0=ignore, 1=include
-care_optimize_false = 1     # category "Optimize" and required "false": 0=ignore, 1=include
-care_default_true = 1       # category "Default" and required "true": 0=ignore, 1=include
-care_default_false = 1      # category "Default" and required "false": 0=ignore, 1=include
+care_cat_allow  = 1     # "Allow" category: 0=ignore, 1=include
+care_cat_optimize = 1   # "Optimize" category: 0=ignore, 1=include
+care_cat_default = 1    # "Default" category: 0=ignore, 1=include
 
 # Action if O365 endpoint list is not updated
 force_o365_record_refresh = 0   # 0=do not update, 1=update (for test/debug purpose)
@@ -420,7 +417,6 @@ def main():
     for dict_o365_record in dict_o365_all:
         ep_service_area = str(dict_o365_record['serviceArea'])
         ep_category = str(dict_o365_record['category'])
-        ep_required = str(dict_o365_record['required'])
         id = str(dict_o365_record['id'])
 
         if (care_common and ep_service_area == "Common") \
@@ -428,12 +424,9 @@ def main():
             or (care_sharepoint and ep_service_area == "SharePoint") \
             or (care_skype and ep_service_area == "Skype"):
 
-            if (care_allow_true and ep_category == "Allow" and ep_required.lower() == "true") \
-                or (care_allow_false and ep_category == "Allow" and ep_required.lower() == "false") \
-                or (care_optimize_true and ep_category == "Optimize" and ep_required.lower() == "true") \
-                or (care_optimize_false and ep_category == "Optimize" and ep_required.lower() == "false") \
-                or (care_default_true and ep_category == "Default" and ep_required.lower() == "true") \
-                or (care_default_false and ep_category == "Default" and ep_required.lower() == "false") :
+            if (care_cat_allow and ep_category == "Allow") \
+                or (care_cat_optimize and ep_category == "Optimize") \
+                or (care_cat_default and ep_category == "Default"):
 
                 if use_url:
                     #def extract_urls(o365_ep_element, output_list, log_label):

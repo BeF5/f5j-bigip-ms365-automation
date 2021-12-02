@@ -6,7 +6,7 @@ o365update.pyの使い方 - 詳細
 
 1. オプション設定
 =========================
-o365update.pyの38~89行を必要に応じて変更してください
+o365update.pyの38~86行を必要に応じて変更してください
 
 取得するデータの選択
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,20 +36,16 @@ o365update.pyの38~89行を必要に応じて変更してください
     care_skype,1,"1= “Skype”を対象とする, 0=しない"
     care_sharepoint,1,"1= “Sharepoint”を対象とする, 0=しない"
 
-データ取得の対象とするcategoryとrequired(true, false)の選択
+データ取得の対象とするcategoryの選択
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. csv-table::
     :header: "項目", "デフォルト", "説明"
-    :widths: 15, 10, 50
+    :widths: 15, 10, 40
 
-    care_allow_true,1,"1= category=Allow かつ required=trueを対象とする, 0=しない"
-    care_allow_false,1,"1= category=Allow かつ required=falseを対象とする, 0=しない"
-    care_optimize_true,1,"1= category=Optimize かつ required=trueを対象とする, 0=しない"
-    care_optimize_false,1,"1= category=Optimize かつ required=falseを対象とする, 0=しない"
-    care_default_true,1,"1= category=Default かつ required=trueを対象とする, 0=しない"
-    care_default_false,1,"1= category=Default かつ required=falseを対象とする, 0=しない"
-
+    care_cat_allow,1,"1= “Allow”を対象とする, 0=しない"
+    care_cat_optimize,1,"1= “Optimize”を対象とする, 0=しない"
+    care_cat_default ,1,"1= “Default”を対象とする, 0=しない"
 
 MSが配布するデータが更新されていなくてもBIG-IPへの更新を行うか
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

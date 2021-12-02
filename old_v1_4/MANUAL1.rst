@@ -6,7 +6,7 @@ o365update.pyの使い方 - 概要
 
 利用手順の概要
 ----------------------
-* 一緒に配布されている “o365update.py”の38～89行目をユーザ様のニーズに応じて変更
+* 一緒に配布されている “o365update.py”の38～86行目をユーザ様のニーズに応じて変更
 * BIG-IPのローカルディスク上に配置
 * 上記PythonプログラムをcronまたはiCallで定期実行
 
@@ -24,14 +24,11 @@ o365update.pyの機能
     *   Skype
     *   Sharepoint
 
-6.  ユーザ設定に従って対象としたい"category"と"required"の組み合わせで対象レコードを絞り込み
+6.  ユーザ設定に従って対象としたい"category"を絞り込み
    
-    *   category = Allow かつ required = true
-    *   category = Allow かつ required = false
-    *   category = Optimize かつ required = true
-    *   category = Optimize かつ required = false
-    *   category = Default かつ required = true
-    *   category = Default かつ required = false
+    *   Allow
+    *   Optimize
+    *   Default
 
 7.	ユーザ設定に従って下記3パターンのURL、IPv4アドレス、IPv6アドレスをそれぞれ抽出
 

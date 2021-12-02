@@ -45,6 +45,10 @@ __ o365update.py_
 変更履歴
 --------------------------------
 
+v1.5 (2021.12.2)
+
+* "category"フィールドの3種の値(Allow, Optimize, Default)のそれぞれに関して、"required"フィールドの値(true, false)ごとにURL/IPアドレスリストに取り込むか否かのオプションを追加
+
 v1.4 (2021.10.22)
 
 * Proxyサーバ経由でMicrosoft Web Serviceへ接続する機能を追加。認証無し、及びBasic認証をサポート
